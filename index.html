@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+      <head>
+        <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>8085 Instruction Navigator</title> 
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
+    <link rel="stylesheet" href="styles.css">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+      </head>
+      <body class="flex flex-col min-h-screen">
+            <header class="bg-slate-900 text-white shadow-lg z-20">
+                  <div class="container mx-auto px-4 py-6 flex flex-col md:flex-row justify-between items-center">
+                        <div>
+                              <h1 class="text-3xl font-blod tracking-tight">
+                                    <span class="text-orange-500">8085 </span>NAVIGATOR
+                              </h1>
+                              <p class="text-slate-400 text-sm mt-1">Instruction Set Architecture Reference</p>
+                        </div>
+                        <div class="mt-4 md:mt-0 flex gap-4 text-sm font-mono text-slate-300">
+                              <div class="px-3 py-1 bg-slate-800 rounded border border-slate-700">DATA BUS: 8-BIT</div>
+                              <div class="px-3 py-1 bg-slate-800 rounded border border-slate-700">ADDRESS BUS: 16-BIT</div>
+                        </div>
+                  </div>
+            </header>
+
+            <main class="flex-grow container mx-auto px-4 py-8 space-y-12">
+                  <section class="space-y-6" id="dashboard">
+                        <div class="max-w-4xl">
+                              <h2 class="text-2xl font-bold text-slate-800 border-l-4 border-orange-500 pl-3 mb-2">Architecture Overview</h2>
+                              <p class="text-slate-600 leading-relaxed">
+                                    The Intel 8085 microprocessor instruction set is categorized into five distinct functional groups.
+                                    Understanding these proportions helps in grasping the processor's primary capabilities: data manipulation and control flow. The visualizations below break down the command types and their impact on the processor's Status Flags.
+                              </p>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
+                              <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                                    <h3 class="text-lg font-semibold text-slate-700 mb-4 text-center">Instruction Categories</h3>
+                                    <div class="flex flex-col items-center">
+                                          <div class="chart-container">
+                                                <canvas id="categoryChart"></canvas>
+                                          </div>
+                                          <p class="text-xs text-slate-500 mt-4 text-center italic">Distributuion by functional group</p>
+                                    </div>
+                              </div>
+
+                              <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                                    <h3 class="text-lg font-semibold text-slate-700 mb-4 text-center">Flag Impact Analysis</h3>
+                                    <div class="flex flex-col items-center">
+                                          <div class="chart-container">
+                                                <canvas id="flagChart"></canvas>
+                                          </div>
+                                          <p class="text-xs text-slate-500 mt-4 text-center italic">Number of Instructions that affect CPU status flags.</p>
+                                    </div>
+                              </div>
+                        </div>
+                  </section>
+
+                          <section id="explorer" class="scroll-mt-8">
+            <div class="max-w-4xl mb-6">
+                <h2 class="text-2xl font-bold text-slate-800 border-l-4 border-orange-500 pl-3 mb-2">Instruction Explorer</h2>
+                <p class="text-slate-600">
+                    Search and filter the complete command database. Select any instruction to load it into the <strong>Decoder Panel</strong>, 
+                    where you can view specific details about operands, flags affected, and functional descriptions.
+                </p>
+            </div>
+
+            <div class="flex flex-col lg:flex-row gap-6 h-[800px] lg:h-[700px]">
+                
+              
+                <div class="flex-1 flex flex-col bg-white rounded-xl shadow-md border border-stone-200 overflow-hidden">
+                    
+                 
+                    <div class="p-4 border-b border-stone-100 bg-stone-50 space-y-3">
+                        <div class="relative">
+                            <input type="text" id="searchInput" placeholder="Search Mnemonic (e.g., MOV, ADD)..." 
+                                class="w-full pl-10 pr-4 py-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-orange-500 font-mono uppercase">
+                            <span class="absolute left-3 top-2.5 text-stone-400">🔍</span>
+                        </div>
+                        
+                        <div class="flex flex-wrap gap-2" id="categoryFilters">
+                         
+                        </div>
+                    </div>
+
+                 
+                    <div class="flex-1 overflow-y-auto custom-scroll p-2 space-y-2" id="instructionList">
+                    
+                    </div>
+                    
+                    <div class="p-2 text-center text-xs text-stone-400 bg-stone-50 border-t border-stone-100">
+                        Showing <span id="countDisplay">0</span> instructions
+                    </div>
+                </div>
+
+             
+                <div class="lg:w-1/3 flex flex-col">
+                    <div class="bg-slate-800 text-stone-100 rounded-xl shadow-xl overflow-hidden sticky top-6 flex flex-col h-full border border-slate-700">
+                        
+                
+                        <div class="p-6 bg-slate-900 border-b border-slate-700">
+                            <h3 class="text-xs font-bold uppercase tracking-widest text-orange-500 mb-1">Decoder Panel</h3>
+                            <div class="flex justify-between items-baseline">
+                                <h2 id="detailMnemonic" class="text-4xl font-mono font-bold text-white">---</h2>
+                                <span id="detailCategory" class="text-xs px-2 py-1 rounded bg-slate-700 text-slate-300">Select Instruction</span>
+                            </div>
+                        </div>
+
+                   
+                        <div class="p-6 flex-1 flex flex-col space-y-6 overflow-y-auto custom-scroll">
+                            
+                  
+                            <div>
+                                <h4 class="text-xs uppercase text-slate-500 font-bold mb-2">Format / Operands</h4>
+                                <div id="detailFormat" class="font-mono text-lg text-orange-400 bg-slate-900 p-3 rounded border border-slate-700">
+                                    Waiting for input...
+                                </div>
+                            </div>
+
+                            <div>
+                                <h4 class="text-xs uppercase text-slate-500 font-bold mb-2">Description</h4>
+                                <p id="detailDesc" class="text-slate-300 leading-relaxed text-sm">
+                                    Click on an instruction from the list to view its complete technical breakdown and operational logic.
+                                </p>
+                            </div>
+
+                            <div class="pt-4 border-t border-slate-700">
+                                <h4 class="text-xs uppercase text-slate-500 font-bold mb-3">Status Flags Affected</h4>
+                                <div class="grid grid-cols-5 gap-2 text-center">
+                                    <div id="flagS" class="flag-box flag-inactive rounded p-2 border flex flex-col items-center justify-center">
+                                        <span class="font-bold text-lg">S</span>
+                                        <span class="text-[10px] uppercase">Sign</span>
+                                    </div>
+                                    <div id="flagZ" class="flag-box flag-inactive rounded p-2 border flex flex-col items-center justify-center">
+                                        <span class="font-bold text-lg">Z</span>
+                                        <span class="text-[10px] uppercase">Zero</span>
+                                    </div>
+                                    <div id="flagAC" class="flag-box flag-inactive rounded p-2 border flex flex-col items-center justify-center">
+                                        <span class="font-bold text-lg">AC</span>
+                                        <span class="text-[10px] uppercase">Aux</span>
+                                    </div>
+                                    <div id="flagP" class="flag-box flag-inactive rounded p-2 border flex flex-col items-center justify-center">
+                                        <span class="font-bold text-lg">P</span>
+                                        <span class="text-[10px] uppercase">Parity</span>
+                                    </div>
+                                    <div id="flagCY" class="flag-box flag-inactive rounded p-2 border flex flex-col items-center justify-center">
+                                        <span class="font-bold text-lg">CY</span>
+                                        <span class="text-[10px] uppercase">Carry</span>
+                                    </div>
+                                </div>
+                                <p id="flagNote" class="text-xs text-slate-500 mt-2 italic text-center min-h-[1.5em]"></p>
+                            </div>
+
+                        </div>
+                  
+                        <div class="p-3 bg-slate-900 border-t border-slate-700 flex justify-between items-center text-[10px] text-slate-600 font-mono">
+                            <span>INTEL 8085</span>
+                            <span>REV 1.0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+                  
+            </main>
+                <footer class="bg-white border-t border-stone-200 mt-12 py-8">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-stone-500 text-sm">&copy;  <span id="year"></span> | 8085 Instruction Set Guide. All Rights Reservered.</p>
+            <a href="https://github.com/Mutugi817">
+                  <p class="text-stone-500 text-bold">Created with <span>❤️</span> by Brian Gakenge</p>
+            </a>
+        </div>
+    </footer>
+    <script src="appLogic.js"></script>
+      </body>
+</html>
